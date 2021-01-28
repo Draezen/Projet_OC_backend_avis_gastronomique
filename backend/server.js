@@ -1,6 +1,9 @@
 //importer le package HTTP de Node
 const http = require("http")
 
+//importations des variables d'environnement
+require("dotenv").config()
+
 //importer l'application
 const app = require("./app")
 
@@ -17,7 +20,7 @@ const normalizePort = val => {
   return false;
 };
 
-const port = normalizePort(process.env.PORT || '3000');
+const port = normalizePort(process.env.PORT);
 
 //definir quel port utiliser 
 app.set('port', port);
