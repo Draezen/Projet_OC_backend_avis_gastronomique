@@ -5,13 +5,15 @@ const jwt = require("jsonwebtoken")
 
 const User = require("../models/User")
 
+const cryptoJS = require ("crypto-js")
+
 exports.signup = (req, res, next) => {
     //cryptage du mdp, methode async
     bcrypt.hash(req.body.password, 10)
         //création du nouvel utilisateur
         .then( hash => {
             const user = new User({
-                email: req.body.email,
+                email: cryptoJS.HmacSHA512(req.body.email, process.env.CRYPTO_JS_KEY).toString(),
                 password: hash
             })
             //savegarde dans la bdd
@@ -23,8 +25,7 @@ exports.signup = (req, res, next) => {
 }
 
 exports.login = (req, res, next) => {
-    //récupération de l'utilisateur dans la bdd
-    User.findOne({ email: req.body.email })
+    User.findOne({ email: cryptoJS.HmacSHA512(req.body.email, process.env.CRYPTO_JS_KEY).toString() })
         .then(user => {
             if (!user) {
                 return res.status(401).json({ error: "Utilisateur non trouvé !" })
@@ -41,7 +42,7 @@ exports.login = (req, res, next) => {
                         //utilisation de la fonction sign pour encoder un nouveau token
                         token: jwt.sign(
                             { userId: user._id },
-                            process.env.USER_SECRET_TOKEN,
+                            process.env.JWT_TOKEN,
                             { expiresIn: "24h" }
                         )
                     })
