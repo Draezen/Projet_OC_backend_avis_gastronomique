@@ -20,21 +20,13 @@ exports.createSauce = (req, res, next) => {
 
     const sauce = new Sauce({
         ...sauceObject,
-        // name : sauceObject.name,
-        // manufacturer: sauceObject.manufacturer, 
-        // description: sauceObject.description,
-        // mainPepper: sauceObject.mainPepper,
-        // heat: sauceObject.heat,
-        // userId: sauceObject.userId,
         imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
         likes : 0,
         dislikes :0,
-        // userLiked : [],
-        // userDisliked:[]
     })
         //enregistrement dans la bdd
         sauce.save()
-        .then(() => res.status(201).json({ message : "Objet enregistré !"}))
+        .then(() => res.status(201).json({ message : "Object saved !"}))
         .catch(error => res.status(400).json({ error }))
 }
 
@@ -45,7 +37,7 @@ exports.modifySauce = (req, res, next) => {
         imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
     } : { ...req.body }
     Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
-        .then(() => res.status(200).json({ message : "Objet modifié !"}))
+        .then(() => res.status(200).json({ message : "Object modified !"}))
         .catch(error => res.status(400).json({ error }))
 }
 
@@ -59,7 +51,7 @@ exports.deleteSauce = (req, res, next) => {
         //suppression du fichier
         fs.unlink(`images/${filename}`, () =>{
             Sauce.deleteOne({ _id: req.params.id })
-            .then(() => res.status(200).json({ message : "Objet supprimé !"}))
+            .then(() => res.status(200).json({ message : "Object deleted !"}))
             .catch(error => res.status(400).json({ error }))
         })
     })
@@ -102,7 +94,7 @@ exports.likeSauce = (req, res, next) => {
             }
             //mise a jour de la sauce
             Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id})
-                .then(() => res.status(200).json({ message : "Objet modifié !"}))
+                .then(() => res.status(200).json({ message : "Objet modified !"}))
                 .catch(error => res.status(400).json({ error }))
         })
         .catch(error => res.status(400).json({ error }))

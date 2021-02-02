@@ -28,13 +28,13 @@ exports.login = (req, res, next) => {
     User.findOne({ email: cryptoJS.HmacSHA512(req.body.email, process.env.CRYPTO_JS_KEY).toString() })
         .then(user => {
             if (!user) {
-                return res.status(401).json({ error: "Utilisateur non trouvé !" })
+                return res.status(401).json({ error: "User not found !" })
             }
             //comparaison des mdp cryptés
             bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if(!valid) {
-                        return res.status(401).json({ error: "Mot de passe incorect !" })
+                        return res.status(401).json({ error: "Wrong password !" })
                     }
                     //renvoi du userId et un token
                     res.status(200).json({
