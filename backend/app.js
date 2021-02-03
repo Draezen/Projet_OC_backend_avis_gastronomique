@@ -4,8 +4,7 @@ const express = require("express")
 const bodyParser = require("body-parser")
 //package qui facilite les intéraction avec MongoDB
 const mongoose = require("mongoose")
-//protection contre l'injection dans mongoDB
-const mongoSanitize = require("express-mongo-sanitize")
+
 
 //package node pour trouver le chemin d'un ficher/dossier
 const path = require("path")
@@ -36,11 +35,6 @@ app.use((req, res, next) => {
 
 //analyse du corps de la demande
 app.use(bodyParser.json());
-
-//protection contre l'injection de données
-app.use(mongoSanitize({
-    replaceWith:"_"
-}))
 
 //définiition du chemin d'enregistrement des images
 app.use("/images", express.static(path.join(__dirname, "images")))
