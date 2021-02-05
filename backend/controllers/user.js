@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken")
 const User = require("../models/User")
 
 const cryptoJS = require ("crypto-js")
+const maskData = require("maskdata")
 
 exports.signup = (req, res, next) => {
     //cryptage du mdp, methode async
@@ -14,6 +15,7 @@ exports.signup = (req, res, next) => {
         .then( hash => {
             const user = new User({
                 email: cryptoJS.HmacSHA512(req.body.email, process.env.CRYPTO_JS_KEY).toString(),
+                emailMasked: maskData.maskEmail2(req.body.email),
                 password: hash
             })
             //savegarde dans la bdd
@@ -21,20 +23,20 @@ exports.signup = (req, res, next) => {
                 .then(() => res.status(201).json({ message: "Utilisateur crée !" }))
                 .catch(error => res.status(400).json({ error }))
         })
-        .catch(error => res.status(500).json({ error }))
+        .catch(error => res.status(500).json({ message }))
 }
 
 exports.login = (req, res, next) => {
     User.findOne({ email: cryptoJS.HmacSHA512(req.body.email, process.env.CRYPTO_JS_KEY).toString() })
         .then(user => {
             if (!user) {
-                return res.status(401).json({ error: "User not found !" })
+                return res.status(401).json({ error: "Wrong email or password !" })
             }
             //comparaison des mdp cryptés
             bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if(!valid) {
-                        return res.status(401).json({ error: "Wrong password !" })
+                        return res.status(401).json({ error: "Wrong email or password !" })
                     }
                     //renvoi du userId et un token
                     res.status(200).json({
