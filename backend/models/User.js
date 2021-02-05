@@ -24,6 +24,6 @@ const userSchema = mongoose.Schema({
 })
 
 //passage du schema au validateur d'email unique
-userSchema.plugin(uniqueValidator, {message : "Error, email already existe !"})
+userSchema.plugin(uniqueValidator, {message : "Email already existe !"})
 
 module.exports = mongoose.model("User", userSchema)

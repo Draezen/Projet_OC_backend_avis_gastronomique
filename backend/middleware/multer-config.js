@@ -15,9 +15,11 @@ const storage = multer.diskStorage({
     //nom du fichier
     filename: (req, file, callback) => {
         //suppression des espace et remplacement par des _
-        const name = file.originalname.split(" ").join("_")
+        const fileComplet = file.originalname.split(" ").join("_")
+        //suppression de l'extension dans le nom du fichier
+        const fileName = fileComplet.substr(0, fileComplet.lastIndexOf(".")) || fileComplet
         const extension = MIME_TYPES[file.mimetype]
-        callback(null, name + Date.now() + "." + extension)
+        callback(null, fileName + Date.now() + "." + extension)
     }
 })
 

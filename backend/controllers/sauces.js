@@ -8,32 +8,39 @@ const validator = require("validator")
 exports.getAllSauces = (req, res, next) => {
     Sauce.find()
         .then(sauces => res.status(200).json(sauces))
-        .catch(error => res.status(400).json({ error }))
+        .catch(error => res.status(400).json({ error : "Connexion failed" }))
 }
 
 exports.getOneSauce = (req, res, next) => {
     Sauce.findOne({ _id: req.params.id })
         .then(sauce => res.status(200).json(sauce))
-        .catch(error => res.status(400).json({ error }))
+        .catch(error => res.status(400).json({ error : "unknow id"}))
 }
 
 exports.createSauce = (req, res, next) => {
     const sauceObject = JSON.parse(req.body.sauce)
 
     const sauce = new Sauce({
-        ...sauceObject,
+        //...sauceObject,
+        userId: validator.blacklist(sauceObject.userId,'\<\>\&\$\=\`'),
         name : validator.blacklist(sauceObject.name, '\<\>\&\$\=\`'),
         manufacturer:  validator.blacklist(sauceObject.manufacturer, '\<\>\&\$\=\`'),
         description : validator.blacklist(sauceObject.description, '\<\>\&\$\=\`'),
         mainPepper :  validator.blacklist(sauceObject.mainPepper, '\<\>\&\$\=\`'), 
         imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
+        heat: Math.round(sauceObject.heat),
         likes : 0,
         dislikes :0,
+        usersLiked : [],
+        usersDisliked : [],
     })
         //enregistrement dans la bdd
         sauce.save()
         .then(() => res.status(201).json({ message : "Object saved !"}))
-        .catch(error => res.status(400).json({ error }))
+        .catch(error =>  {
+            const errorMessage = error.message
+            res.status(400).json({  errorMessage })
+        })
 }
 
 exports.modifySauce = (req, res, next) => {
