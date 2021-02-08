@@ -3,7 +3,6 @@ const Sauce = require("../models/Sauces")
 //package node file system, donne acces aux fonctions qui permettent de modifier le systeme de fichier
 const fs = require("fs")
 
-const validator = require("validator")
 
 exports.getAllSauces = (req, res, next) => {
     Sauce.find()
@@ -18,17 +17,10 @@ exports.getOneSauce = (req, res, next) => {
 }
 
 exports.createSauce = (req, res, next) => {
-    const sauceObject = JSON.parse(req.body.sauce)
+    const sauceObject = req.body
 
     const sauce = new Sauce({
-        //...sauceObject,
-        //name : validator.blacklist(sauceObject.name, '\<\>\&\$\=\`'),
-        name: sauceObject.name,
-        manufacturer:  validator.blacklist(sauceObject.manufacturer, '\<\>\&\$\=\`'),
-        description : validator.blacklist(sauceObject.description, '\<\>\&\$\=\`'),
-        mainPepper :  validator.blacklist(sauceObject.mainPepper, '\<\>\&\$\=\`'), 
-        heat: Math.round(sauceObject.heat),
-        userId: validator.blacklist(sauceObject.userId,'\<\>\&\$\=\`'),
+        ...sauceObject,
         imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
         likes : 0,
         dislikes :0,
@@ -45,30 +37,19 @@ exports.createSauce = (req, res, next) => {
 }
 
 exports.modifySauce = (req, res, next) => {
-    let sauceObject = {}
+    const sauceObject = req.body
+
     if ( req.file) {
-        const sauce = JSON.parse(req.body.sauce)
-        sauceObject = {
-            ...sauce,
-            //name : validator.blacklist(sauce.name, '\<\>\&\$\=\`'),
-            name: sauce.name,
-            manufacturer:  validator.blacklist(sauce.manufacturer, '\<\>\&\$\=\`'),
-            description : validator.blacklist(sauce.description, '\<\>\&\$\=\`'),
-            mainPepper :  validator.blacklist(sauce.mainPepper, '\<\>\&\$\=\`'), 
-            heat: Math.round(sauceObject.heat),
-            userId: validator.blacklist(sauceObject.userId,'\<\>\&\$\=\`'),
+        sauce = {
+            ...sauceObject,
             imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
         }
     } else {
-       sauceObject = {
-           ...req.body,
-            name : validator.blacklist(req.body.name, '\<\>\&\$\=\`'),
-            manufacturer:  validator.blacklist(req.body.manufacturer, '\<\>\&\$\=\`'),
-            description : validator.blacklist(req.body.description, '\<\>\&\$\=\`'),
-            mainPepper :  validator.blacklist(req.body.mainPepper, '\<\>\&\$\=\`') 
+       sauce = {
+           ...sauceObject,
        }
     }
-    Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
+    Sauce.updateOne({ _id: req.params.id }, { ...sauce, _id: req.params.id })
         .then(() => res.status(200).json({ message : "Object modified !"}))
         .catch(error => res.status(400).json({ error }))
 }

@@ -6,8 +6,7 @@ const router = express.Router()
 const rateLimit = require("express-rate-limit")
 
 const bodyCheck = require("../middleware/bodyCheck")
-const {emailValidationRules, validate} = require("../middleware/emailValidator")
-const passwordValidator = require("../middleware/password-validator")
+const { userValidationRules, validate } = require("../middleware/userValidator")
 
 const userCtrl = require("../controllers/user")
 
@@ -17,7 +16,7 @@ const loginLimiter = rateLimit({
     message : "Too many login for this IP, please try again after 15min"
 })
 
-router.post("/signup", bodyCheck ,emailValidationRules(), validate ,passwordValidator, userCtrl.signup)
+router.post("/signup", bodyCheck ,userValidationRules(), validate , userCtrl.signup)
 router.post("/login", loginLimiter, bodyCheck, userCtrl.login)
 
 module.exports = router

@@ -34,6 +34,7 @@ app.use((req, res, next) => {
 });
 
 //analyse du corps de la demande
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 //définiition du chemin d'enregistrement des images
