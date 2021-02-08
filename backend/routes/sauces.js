@@ -6,13 +6,14 @@ const router = express.Router()
 const saucesCtrl = require("../controllers/sauces")
 const auth = require("../middleware/auth")
 const multer = require("../middleware/multer-config")
+const datasValidator = require("../middleware/datasValidator")
 
 //affichage de toutes les sauces
 router.get("/", auth, saucesCtrl.getAllSauces)
 //affichage du détail d'une sauce
 router.get("/:id", auth, saucesCtrl.getOneSauce)
 //ajouter une sauce
-router.post("/",auth, multer, saucesCtrl.createSauce)
+router.post("/",auth, multer, datasValidator, saucesCtrl.createSauce)
 //modifier une sauce
 router.put("/:id", auth, multer, saucesCtrl.modifySauce)
 //supprimer une sauce

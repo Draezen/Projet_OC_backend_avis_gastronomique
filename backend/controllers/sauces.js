@@ -22,13 +22,14 @@ exports.createSauce = (req, res, next) => {
 
     const sauce = new Sauce({
         //...sauceObject,
-        userId: validator.blacklist(sauceObject.userId,'\<\>\&\$\=\`'),
-        name : validator.blacklist(sauceObject.name, '\<\>\&\$\=\`'),
+        //name : validator.blacklist(sauceObject.name, '\<\>\&\$\=\`'),
+        name: sauceObject.name,
         manufacturer:  validator.blacklist(sauceObject.manufacturer, '\<\>\&\$\=\`'),
         description : validator.blacklist(sauceObject.description, '\<\>\&\$\=\`'),
         mainPepper :  validator.blacklist(sauceObject.mainPepper, '\<\>\&\$\=\`'), 
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
         heat: Math.round(sauceObject.heat),
+        userId: validator.blacklist(sauceObject.userId,'\<\>\&\$\=\`'),
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
         likes : 0,
         dislikes :0,
         usersLiked : [],
@@ -49,10 +50,13 @@ exports.modifySauce = (req, res, next) => {
         const sauce = JSON.parse(req.body.sauce)
         sauceObject = {
             ...sauce,
-            name : validator.blacklist(sauce.name, '\<\>\&\$\=\`'),
+            //name : validator.blacklist(sauce.name, '\<\>\&\$\=\`'),
+            name: sauce.name,
             manufacturer:  validator.blacklist(sauce.manufacturer, '\<\>\&\$\=\`'),
             description : validator.blacklist(sauce.description, '\<\>\&\$\=\`'),
             mainPepper :  validator.blacklist(sauce.mainPepper, '\<\>\&\$\=\`'), 
+            heat: Math.round(sauceObject.heat),
+            userId: validator.blacklist(sauceObject.userId,'\<\>\&\$\=\`'),
             imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
         }
     } else {
