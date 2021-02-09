@@ -3,6 +3,7 @@ const Sauce = require("../models/Sauces")
 //package node file system, donne acces aux fonctions qui permettent de modifier le systeme de fichier
 const fs = require("fs")
 
+const renameFile = require("../middleware/renameFile")
 
 exports.getAllSauces = (req, res, next) => {
     Sauce.find()
@@ -19,9 +20,11 @@ exports.getOneSauce = (req, res, next) => {
 exports.createSauce = (req, res, next) => {
     const sauceObject = req.body
 
+    const fileName = renameFile(req.file)
+
     const sauce = new Sauce({
         ...sauceObject,
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`,
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${fileName}`,
         likes : 0,
         dislikes :0,
         usersLiked : [],
@@ -29,7 +32,10 @@ exports.createSauce = (req, res, next) => {
     })
         //enregistrement dans la bdd
         sauce.save()
-        .then(() => res.status(201).json({ message : "Object saved !"}))
+        .then(() => {
+            fs.writeFileSync('images/'+ fileName , req.file.buffer)
+            res.status(201).json({ message : "Object saved !"})
+        })
         .catch(error =>  {
             const errorMessage = error.message
             res.status(400).json({  errorMessage })
@@ -43,12 +49,32 @@ exports.modifySauce = (req, res, next) => {
     delete req.body.usersDisliked
 
     const sauceObject = req.body
+    let sauce = {}
 
     if ( req.file) {
-        sauce = {
-            ...sauceObject,
-            imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
-        }
+        const fileName = renameFile(req.file)
+        //enregistrement de l'image sur le disque
+        fs.writeFile('images/'+ fileName , req.file.buffer, (err) => {
+            if (err) {
+                return res.status(400).json({ error: err })
+            } else {
+                sauce = {
+                    ...sauceObject,
+                    imageUrl: `${req.protocol}://${req.get("host")}/images/${fileName}`
+                }
+                //recherche de l'url de l'ancienne image pour le supprimer
+                Sauce.findOne({ _id: req.params.id })
+                    .then(sauceDb => {
+                        //récupération du nom du fichier
+                        const fileToDelete = sauceDb.imageUrl.split("/images/")[1]
+                        //suppression du fichier
+                        fs.unlinkSync(`images/${fileToDelete}`)
+                    })
+                    // .catch(error => {
+                        //     return res.status(500).json({ error })
+                        // })
+            }
+        })
     } else {
        sauce = {
            ...sauceObject,
@@ -63,9 +89,9 @@ exports.modifySauce = (req, res, next) => {
 exports.deleteSauce = (req, res, next) => {
    //recherche dans la base de l'adresse de l'image à suppr
    Sauce.findOne({ _id: req.params.id })
-    .then(sauce => {
+    .then(sauceDb => {
         //récupération du nom du fichier
-        const filename = sauce.imageUrl.split("/images")[1]
+        const filename = sauceDb.imageUrl.split("/images")[1]
         //suppression du fichier
         fs.unlink(`images/${filename}`, () =>{
             Sauce.deleteOne({ _id: req.params.id })
