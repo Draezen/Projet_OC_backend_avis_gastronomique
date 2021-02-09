@@ -42,7 +42,6 @@ const datasValidationRules = () => {
             .withMessage("userId must be alphanumeric")
             .notEmpty()
             .withMessage("userId cannot be empty"),
-
     ]
 }
 

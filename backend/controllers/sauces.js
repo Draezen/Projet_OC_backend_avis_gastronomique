@@ -37,6 +37,11 @@ exports.createSauce = (req, res, next) => {
 }
 
 exports.modifySauce = (req, res, next) => {
+    delete req.body.likes
+    delete req.body.dislikes
+    delete req.body.usersLiked
+    delete req.body.usersDisliked
+
     const sauceObject = req.body
 
     if ( req.file) {
