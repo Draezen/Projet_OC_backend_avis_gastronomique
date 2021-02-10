@@ -13,6 +13,9 @@ const path = require("path")
 const userRoutes = require("./routes/user")
 const saucesRoutes = require ("./routes/sauces")
 
+//gestion des erreurs 404
+const error404 = require("./middleware/errors")
+
 //connexion à mongoDB
 mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_CLUSTER}.btncq.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`,
 { useNewUrlParser: true,
@@ -43,6 +46,9 @@ app.use("/images", express.static(path.join(__dirname, "images")))
 //utilisation du router
 app.use("/api/auth", userRoutes)
 app.use("/api/sauces", saucesRoutes)
+
+//gestion des erreurs 404
+app.use(error404)
 
 //exporter l'application pour y accéder depuis les autres fichiers du projet (ex server node)
 module.exports = app

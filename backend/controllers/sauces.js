@@ -72,8 +72,8 @@ exports.modifySauce = (req, res, next) => {
                     fs.unlinkSync(`images/${fileToDelete}`)
                     //modif des données de la sauce
                     Sauce.updateOne({ _id: req.params.id }, { ...sauce, _id: req.params.id })
-                    .then(() => res.status(200).json({ message : "Object modified !"}))
-                    .catch(error => res.status(400).json({ error }))
+                        .then(() => res.status(200).json({ message : "Object modified !"}))
+                        .catch(error => res.status(400).json({ error : "Error when update to mongoDB" }))
                 }
             })
         })
@@ -86,8 +86,8 @@ exports.modifySauce = (req, res, next) => {
        }
         //modif des données de la sauce
         Sauce.updateOne({ _id: req.params.id }, { ...sauce, _id: req.params.id })
-        .then(() => res.status(200).json({ message : "Object modified !"}))
-        .catch(error => res.status(400).json({ error }))
+            .then(() => res.status(200).json({ message : "Object modified !"}))
+            .catch(error => res.status(400).json({ error : "Error when update to mongoDB" }))
     }
 }
 
@@ -154,7 +154,7 @@ exports.likeSauce = (req, res, next) => {
             //mise a jour de la sauce
             Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id})
                 .then(() => res.status(200).json({ message : "Objet modified !"}))
-                .catch(error => res.status(400).json({ error }))
+                .catch(error => res.status(400).json({ error : "Error when update to mongoDB" }))
         })
         .catch(error => res.status(400).json({ error : "Unknown Id, object does not exists !" }))
 }
