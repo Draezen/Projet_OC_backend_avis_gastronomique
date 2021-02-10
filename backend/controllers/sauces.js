@@ -91,7 +91,6 @@ exports.modifySauce = (req, res, next) => {
     }
 }
 
-
 exports.deleteSauce = (req, res, next) => {
    //recherche dans la base de l'adresse de l'image à suppr
    Sauce.findOne({ _id: req.params.id })
@@ -118,29 +117,39 @@ exports.likeSauce = (req, res, next) => {
                 usersLiked : sauce.usersLiked,
                 usersDisliked : sauce.usersDisliked,
             }
+             //vérificaiton dans la bdd si l'utilisateur à liké ou disliké la sauce
+            const userHasLiked = sauceObject.usersLiked.indexOf(req.body.userId)
+            const userHasDisliked = sauceObject.usersDisliked.indexOf(req.body.userId)
+
             switch (req.body.like) {
                 case 1:
-                    sauceObject.usersLiked.push(req.body.userId)
-                    sauceObject.likes ++
-                    break
-                case -1:
-                    sauceObject.usersDisliked.push(req.body.userId)
-                    sauceObject.dislikes ++
-                    break
-                case 0:
-                    let i = sauceObject.usersLiked.indexOf(req.body.userId)
-                    if (i !== -1) {
-                        sauceObject.usersLiked.splice(i, 1)
-                        sauceObject.likes --
+                    if (userHasLiked === -1 && userHasDisliked === -1) {
+                        sauceObject.usersLiked.push(req.body.userId)
+                        sauceObject.likes = sauceObject.usersLiked.length
+                        break
+                    } else {
+                        return res.status(400).json({ error : "You already marked this sauce !" })
                     }
-                    let j = sauceObject.usersDisliked.indexOf(req.body.userId)
-                    if (j !== -1) {
-                        sauceObject.usersDisliked.splice(j, 1)
-                        sauceObject.dislikes --
+                case -1:
+                    if (userHasLiked === -1 && userHasDisliked === -1) {
+                    sauceObject.usersDisliked.push(req.body.userId)
+                    sauceObject.dislikes = sauceObject.usersDisliked.length
+                    break
+                } else {
+                    return res.status(400).json({ error : "You already marked this sauce !" })
+                }
+                case 0: 
+                    if (userHasLiked !== -1) {
+                        sauceObject.usersLiked.splice(userHasLiked, 1)
+                        sauceObject.likes = sauceObject.usersLiked.length
+                    }        
+                    if (userHasDisliked !== -1) {
+                        sauceObject.usersDisliked.splice(userHasDisliked, 1)
+                        sauceObject.dislikes = sauceObject.usersDisliked.length
                     }
                     break
                 default:
-                    break
+                    return res.status(400).json({ error : "Invalid number, must be -1, 0 or 1" })
             }
             //mise a jour de la sauce
             Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id})
