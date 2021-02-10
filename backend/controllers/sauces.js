@@ -14,7 +14,7 @@ exports.getAllSauces = (req, res, next) => {
 exports.getOneSauce = (req, res, next) => {
     Sauce.findOne({ _id: req.params.id })
         .then(sauce => res.status(200).json(sauce))
-        .catch(error => res.status(400).json({ error : "unknow id"}))
+        .catch(error => res.status(400).json({ error : "Unknown Id, object does not exists !"}))
 }
 
 exports.createSauce = (req, res, next) => {
@@ -52,37 +52,43 @@ exports.modifySauce = (req, res, next) => {
     let sauce = {}
 
     if ( req.file) {
-        const fileName = renameFile(req.file)
-        //enregistrement de l'image sur le disque
-        fs.writeFile('images/'+ fileName , req.file.buffer, (err) => {
-            if (err) {
-                return res.status(400).json({ error: err })
-            } else {
-                sauce = {
-                    ...sauceObject,
-                    imageUrl: `${req.protocol}://${req.get("host")}/images/${fileName}`
+        //recherche de l'url de l'ancienne image pour le supprimer
+        Sauce.findOne({ _id: req.params.id })
+        .then(sauceDb => {
+            //récupération du nom du fichier à supprimer
+            const fileToDelete = sauceDb.imageUrl.split("/images/")[1]
+            //création du nom de la nouvelle image à enregistrer
+            const fileName = renameFile(req.file)
+            //enregistrement de l'image sur le disque
+            fs.writeFile('images/'+ fileName , req.file.buffer, (err) => {
+                if (err) {
+                    return res.status(400).json({ error: err })
+                } else {
+                    sauce = {
+                        ...sauceObject,
+                        imageUrl: `${req.protocol}://${req.get("host")}/images/${fileName}`
+                    }
+                    //suppression de l'ancienne image
+                    fs.unlinkSync(`images/${fileToDelete}`)
+                    //modif des données de la sauce
+                    Sauce.updateOne({ _id: req.params.id }, { ...sauce, _id: req.params.id })
+                    .then(() => res.status(200).json({ message : "Object modified !"}))
+                    .catch(error => res.status(400).json({ error }))
                 }
-                //recherche de l'url de l'ancienne image pour le supprimer
-                Sauce.findOne({ _id: req.params.id })
-                    .then(sauceDb => {
-                        //récupération du nom du fichier
-                        const fileToDelete = sauceDb.imageUrl.split("/images/")[1]
-                        //suppression du fichier
-                        fs.unlinkSync(`images/${fileToDelete}`)
-                    })
-                    // .catch(error => {
-                        //     return res.status(500).json({ error })
-                        // })
-            }
+            })
         })
+        .catch(error => {
+                return res.status(500).json({ error : "Unknown Id, object does not exists !" })
+            })
     } else {
        sauce = {
            ...sauceObject,
        }
-    }
-    Sauce.updateOne({ _id: req.params.id }, { ...sauce, _id: req.params.id })
+        //modif des données de la sauce
+        Sauce.updateOne({ _id: req.params.id }, { ...sauce, _id: req.params.id })
         .then(() => res.status(200).json({ message : "Object modified !"}))
         .catch(error => res.status(400).json({ error }))
+    }
 }
 
 
@@ -99,7 +105,7 @@ exports.deleteSauce = (req, res, next) => {
             .catch(error => res.status(400).json({ error }))
         })
     })
-    .catch(error => res.status(500).json({ error }))
+    .catch(error => res.status(500).json({ error : "Unknown Id, object does not exists !" }))
 }
 
 exports.likeSauce = (req, res, next) => {
@@ -141,6 +147,6 @@ exports.likeSauce = (req, res, next) => {
                 .then(() => res.status(200).json({ message : "Objet modified !"}))
                 .catch(error => res.status(400).json({ error }))
         })
-        .catch(error => res.status(400).json({ error }))
+        .catch(error => res.status(400).json({ error : "Unknown Id, object does not exists !" }))
 }
 
