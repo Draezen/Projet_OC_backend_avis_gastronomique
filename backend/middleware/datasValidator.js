@@ -6,6 +6,7 @@ const dataFormat = (req, res, next) => {
     next()
 }
 
+//rules for valide datas
 const datasValidationRules = () => {
     return [
         body("name")

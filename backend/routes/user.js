@@ -1,11 +1,13 @@
-//dans routes
+//in routes
 
 const express = require ("express")
 const router = express.Router()
 
+//Limit repeated requests
 const rateLimit = require("express-rate-limit")
-
+//Check if body il empty
 const bodyCheck = require("../middleware/bodyCheck")
+//Validate user and password rules
 const { userValidationRules, validate } = require("../middleware/userValidator")
 
 const userCtrl = require("../controllers/user")

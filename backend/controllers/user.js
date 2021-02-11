@@ -1,4 +1,4 @@
-// dans controllers
+// in controllers
 
 const bcrypt = require ("bcrypt")
 const jwt = require("jsonwebtoken")
@@ -9,16 +9,16 @@ const cryptoJS = require ("crypto-js")
 const maskData = require("maskdata")
 
 exports.signup = (req, res, next) => {
-    //cryptage du mdp, methode async
+    //hash of password, method async
     bcrypt.hash(req.body.password, 10)
-        //création du nouvel utilisateur
+        //create a new user
         .then( hash => {
             const user = new User({
                 email: cryptoJS.HmacSHA512(req.body.email, process.env.CRYPTO_JS_KEY).toString(),
                 emailMasked: maskData.maskEmail2(req.body.email),
                 password: hash
             })
-            //savegarde dans la bdd
+            //save user in database
             user.save()
                 .then(() => res.status(201).json({ message: "Utilisateur crée !" }))
                 .catch(error =>  {
@@ -35,16 +35,16 @@ exports.login = (req, res, next) => {
             if (!user) {
                 return res.status(401).json({ error: "Wrong email or password !" })
             }
-            //comparaison des mdp cryptés
+            //compare hashed passwords 
             bcrypt.compare(req.body.password, user.password)
                 .then(valid => {
                     if(!valid) {
                         return res.status(401).json({ error: "Wrong email or password !" })
                     }
-                    //renvoi du userId et un token
+                    //return userId and token
                     res.status(200).json({
                         userId: user._id,
-                        //utilisation de la fonction sign pour encoder un nouveau token
+                        //use sign function to encode a new token
                         token: jwt.sign(
                             { userId: user._id },
                             process.env.JWT_TOKEN,

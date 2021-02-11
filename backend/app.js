@@ -5,7 +5,6 @@ const bodyParser = require("body-parser")
 //package qui facilite les intéraction avec MongoDB
 const mongoose = require("mongoose")
 
-
 //package node pour trouver le chemin d'un ficher/dossier
 const path = require("path")
 

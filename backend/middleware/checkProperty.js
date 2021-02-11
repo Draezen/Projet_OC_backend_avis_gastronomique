@@ -5,13 +5,13 @@ const jwt = require("jsonwebtoken")
 module.exports = (req, res, next) => {
     Sauce.findOne({ _id: req.params.id })
         .then(sauceDb => {
-                //split de la chaine de caractère pour récupérer la partie token
+                //split authorisation header to get the token part
                 const token = req.headers.authorization.split(" ")[1]
-                //vérification du token à l'aide de la clé d'encodage
+                //check token with encoding key 
                 const decodedToken = jwt.verify(token, process.env.JWT_TOKEN)
-                //récupération de l'id
+                //get the id
                 const userId = decodedToken.userId
-                //si id présent mais différent de celui de la base
+                //if id exist but different from the DB
                 if ( sauceDb.userId !== userId) {
                     res.status(401).json({ error : "Invalid user Id !" })
                 } else {

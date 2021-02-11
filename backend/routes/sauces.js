@@ -1,25 +1,29 @@
-//dans routes
+//In routes
 
 const express = require ("express")
 const router = express.Router()
 
 const saucesCtrl = require("../controllers/sauces")
+//handle auth
 const auth = require("../middleware/auth")
+//Handle form-data
 const multer = require("../middleware/multer-config")
+//Check datas validations
 const { dataFormat, datasValidationRules, validate } = require("../middleware/datasValidator")
+//Check property of an object
 const checkProperty = require("../middleware/checkProperty")
 
-//affichage de toutes les sauces
+//show all sauces
 router.get("/", auth, saucesCtrl.getAllSauces)
-//affichage du détail d'une sauce
+//show details of a sauce
 router.get("/:id", auth, saucesCtrl.getOneSauce)
-//ajouter une sauce
+//add une sauce
 router.post("/",auth, multer, dataFormat, datasValidationRules(), validate, saucesCtrl.createSauce)
-//modifier une sauce
+//modify a sauce
 router.put("/:id", auth, checkProperty, multer, dataFormat, datasValidationRules(), validate, saucesCtrl.modifySauce)
-//supprimer une sauce
+//delete une sauce
 router.delete("/:id", auth, checkProperty, saucesCtrl.deleteSauce)
-//liker une sauce
+//like / dislike a sauce
 router.post("/:id/like", auth, saucesCtrl.likeSauce)
 
 module.exports = router

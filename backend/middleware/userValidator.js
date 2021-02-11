@@ -1,6 +1,7 @@
 
 const { body, validationResult} = require("express-validator")
 
+//rules for validate user and password
 const userValidationRules = () => {
   return [
     body("email")

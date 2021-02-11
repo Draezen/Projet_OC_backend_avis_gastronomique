@@ -1,6 +1,6 @@
 const Sauce = require("../models/Sauces")
 
-//package node file system, donne acces aux fonctions qui permettent de modifier le systeme de fichier
+//package node file system, handle file system modifications
 const fs = require("fs")
 
 const renameFile = require("../middleware/renameFile")
@@ -30,7 +30,7 @@ exports.createSauce = (req, res, next) => {
         usersLiked : [],
         usersDisliked : [],
     })
-        //enregistrement dans la bdd
+        //save in database
         sauce.save()
         .then(() => {
             fs.writeFileSync('images/'+ fileName , req.file.buffer)
@@ -52,14 +52,14 @@ exports.modifySauce = (req, res, next) => {
     let sauce = {}
 
     if ( req.file) {
-        //recherche de l'url de l'ancienne image pour le supprimer
+        //find url of the last image to delete
         Sauce.findOne({ _id: req.params.id })
         .then(sauceDb => {
-            //récupération du nom du fichier à supprimer
+            //return name of the last image
             const fileToDelete = sauceDb.imageUrl.split("/images/")[1]
-            //création du nom de la nouvelle image à enregistrer
+            //create name of the new image
             const fileName = renameFile(req.file)
-            //enregistrement de l'image sur le disque
+            //save image on the disk
             fs.writeFile('images/'+ fileName , req.file.buffer, (err) => {
                 if (err) {
                     return res.status(400).json({ error: err })
@@ -68,9 +68,9 @@ exports.modifySauce = (req, res, next) => {
                         ...sauceObject,
                         imageUrl: `${req.protocol}://${req.get("host")}/images/${fileName}`
                     }
-                    //suppression de l'ancienne image
+                    //delete last image
                     fs.unlinkSync(`images/${fileToDelete}`)
-                    //modif des données de la sauce
+                    //update datas in DB
                     Sauce.updateOne({ _id: req.params.id }, { ...sauce, _id: req.params.id })
                         .then(() => res.status(200).json({ message : "Object modified !"}))
                         .catch(error => res.status(400).json({ error : "Error when update to mongoDB" }))
@@ -84,7 +84,7 @@ exports.modifySauce = (req, res, next) => {
        sauce = {
            ...sauceObject,
        }
-        //modif des données de la sauce
+        //update datas in DB
         Sauce.updateOne({ _id: req.params.id }, { ...sauce, _id: req.params.id })
             .then(() => res.status(200).json({ message : "Object modified !"}))
             .catch(error => res.status(400).json({ error : "Error when update to mongoDB" }))
@@ -92,23 +92,24 @@ exports.modifySauce = (req, res, next) => {
 }
 
 exports.deleteSauce = (req, res, next) => {
-   //recherche dans la base de l'adresse de l'image à suppr
-   Sauce.findOne({ _id: req.params.id })
-    .then(sauceDb => {
-        //récupération du nom du fichier
-        const filename = sauceDb.imageUrl.split("/images")[1]
-        //suppression du fichier
-        fs.unlink(`images/${filename}`, () =>{
-            Sauce.deleteOne({ _id: req.params.id })
-            .then(() => res.status(200).json({ message : "Object deleted !"}))
-            .catch(error => res.status(400).json({ error }))
+    //find url of the last image to delete      
+    Sauce.findOne({ _id: req.params.id })
+        .then(sauceDb => {
+            //return name of the image 
+            const filename = sauceDb.imageUrl.split("/images")[1]
+            //delete image
+            fs.unlink(`images/${filename}`, () =>{
+                //delete sauce from the DB
+                Sauce.deleteOne({ _id: req.params.id })
+                .then(() => res.status(200).json({ message : "Object deleted !"}))
+                .catch(error => res.status(400).json({ error }))
+            })
         })
-    })
-    .catch(error => res.status(500).json({ error : "Unknown Id, object does not exists !" }))
+        .catch(error => res.status(500).json({ error : "Unknown Id, object does not exists !" }))
 }
 
 exports.likeSauce = (req, res, next) => {
-    //recherche de la sauce à liker dnas la base
+    //find sauce in the DB
     Sauce.findOne({ _id: req.params.id })
         .then (sauce => {
             let sauceObject ={
@@ -117,7 +118,7 @@ exports.likeSauce = (req, res, next) => {
                 usersLiked : sauce.usersLiked,
                 usersDisliked : sauce.usersDisliked,
             }
-             //vérificaiton dans la bdd si l'utilisateur à liké ou disliké la sauce
+             //Check if user already liked or disliked the sauce
             const userHasLiked = sauceObject.usersLiked.indexOf(req.body.userId)
             const userHasDisliked = sauceObject.usersDisliked.indexOf(req.body.userId)
 
@@ -151,7 +152,7 @@ exports.likeSauce = (req, res, next) => {
                 default:
                     return res.status(400).json({ error : "Invalid number, must be -1, 0 or 1" })
             }
-            //mise a jour de la sauce
+            //Update the sauce
             Sauce.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id})
                 .then(() => res.status(200).json({ message : "Objet modified !"}))
                 .catch(error => res.status(400).json({ error : "Error when update to mongoDB" }))

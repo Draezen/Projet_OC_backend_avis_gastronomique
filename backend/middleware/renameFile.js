@@ -5,13 +5,13 @@ const MIME_TYPES = {
 }
 
 const renameFile = (file) => {
-    //suppression des espace et remplacement par des _
+    //delete blank space and replace by underscore _
     const fileComplet = file.originalname.split(" ").join("_")
-    //suppression de l'extension dans le nom du fichier
+    //delete extension in the file name
     const fileName = fileComplet.substr(0, fileComplet.lastIndexOf(".")) || fileComplet
-    //modification de l'extension
+    //modify extension
     const extension = MIME_TYPES[file.mimetype]
-    //création du nom complet du fichier
+    //create the new name of the file
     return(fileName + "_" + Date.now() + "." + extension)
 }
 

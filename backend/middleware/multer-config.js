@@ -1,4 +1,4 @@
-//multer = gérer les fichiers entrants dans les requêtes HTTP
+//multer = handle files in the HTTP request
 const multer = require("multer")
 
 const MIME_TYPES = {
@@ -9,5 +9,5 @@ const MIME_TYPES = {
 
 const memoryStorage = multer.memoryStorage()
 
-
+//store the file in the memory
 module.exports = multer({storage: memoryStorage}).single("image")
