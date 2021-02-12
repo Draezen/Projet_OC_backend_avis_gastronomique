@@ -10,7 +10,7 @@ module.exports = (req, res, next) => {
         const userId = decodedToken.userId
         //if id exist but different from the DB
         if (req.body.userId && req.body.userId !== userId) {
-            throw "Invalid user ID"
+            return res.status(401).json({ error : "Invalid user ID" })
         } else {
             next()
         }

@@ -13,7 +13,6 @@ const userSchema = mongoose.Schema({
     emailMasked : {
         type : String,
         required : [true, "email required"],
-        unique : true,
         trim : true
     },
     password : { 

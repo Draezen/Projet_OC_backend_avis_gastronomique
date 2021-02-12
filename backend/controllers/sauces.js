@@ -1,4 +1,5 @@
 const Sauce = require("../models/Sauces")
+const User = require("../models/User")
 
 //package node file system, handle file system modifications
 const fs = require("fs")
@@ -20,26 +21,32 @@ exports.getOneSauce = (req, res, next) => {
 exports.createSauce = (req, res, next) => {
     const sauceObject = req.body
 
-    const fileName = renameFile(req.file)
+    //Check if user exists in the DB
+    User.findOne({ _id: req.body.userId })
+        .then (() => {
+            const fileName = renameFile(req.file)
+        
+            const sauce = new Sauce({
+                ...sauceObject,
+                imageUrl: `${req.protocol}://${req.get("host")}/images/${fileName}`,
+                likes : 0,
+                dislikes :0,
+                usersLiked : [],
+                usersDisliked : [],
+            })
+                //save in database
+                sauce.save()
+                    .then(() => {
+                        fs.writeFileSync('images/'+ fileName , req.file.buffer)
+                        res.status(201).json({ message : "Object saved !"})
+                    })
+                    .catch(error =>  {
+                        const errorMessage = error.message
+                        res.status(400).json({  errorMessage })
+                    })
+        })
+        .catch(error => res.status(401).json({ error : "Unknown UserId, user does not exists !"}))
 
-    const sauce = new Sauce({
-        ...sauceObject,
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${fileName}`,
-        likes : 0,
-        dislikes :0,
-        usersLiked : [],
-        usersDisliked : [],
-    })
-        //save in database
-        sauce.save()
-        .then(() => {
-            fs.writeFileSync('images/'+ fileName , req.file.buffer)
-            res.status(201).json({ message : "Object saved !"})
-        })
-        .catch(error =>  {
-            const errorMessage = error.message
-            res.status(400).json({  errorMessage })
-        })
 }
 
 exports.modifySauce = (req, res, next) => {
@@ -47,6 +54,7 @@ exports.modifySauce = (req, res, next) => {
     delete req.body.dislikes
     delete req.body.usersLiked
     delete req.body.usersDisliked
+    delete req.body.userId
 
     const sauceObject = req.body
     let sauce = {}
@@ -101,8 +109,8 @@ exports.deleteSauce = (req, res, next) => {
             fs.unlink(`images/${filename}`, () =>{
                 //delete sauce from the DB
                 Sauce.deleteOne({ _id: req.params.id })
-                .then(() => res.status(200).json({ message : "Object deleted !"}))
-                .catch(error => res.status(400).json({ error }))
+                    .then(() => res.status(200).json({ message : "Object deleted !"}))
+                    .catch(error => res.status(400).json({ error }))
             })
         })
         .catch(error => res.status(500).json({ error : "Unknown Id, object does not exists !" }))
